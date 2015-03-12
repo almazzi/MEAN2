@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html data-ng-app="app">
+<head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+</head>
+<body>
+<h1><%= title %></h1>
+<p>Welcome to <%= title %></p>
+
+<script type="text/ng-template" id="/books.html">
+    <ul>
+        <li data-ng-repeat="book in books"></li>
+    </ul>
+</script>
+
+<script>
+    angular.module('app',['ngRoute'])
+            .controller('BookCtrl',['$scope', function ($scope) {
+                $scope.books = [
+                    {name:'Toolor kulaganda',author:'Ch. Aitmatov',publisher:'Basma',published:'2014-12-27',genre:'roman'},
+                    {name:'Gulsaryat',author:'Ch. Aitmatov',publisher:'Basma',published:'2014-12-27',genre:'roman'},
+                    {name:'Kyiamat',author:'Ch. Aitmatov',publisher:'Basma',published:'2014-12-27',genre:'roman'},
+                    {name:'Samanchynyn jolu',author:'Ch. Aitmatov',publisher:'Basma',published:'2014-12-27',genre:'roman'}
+                ];
+            }])
+            .config(['$routeProvider', function ($routeProvider) {
+                $routeProvider
+                        .when('/',{
+                            templateUrl:'/books.html',
+                            controller:'BookCtrl'
+                        })
+            }]);
+</script>
+</body>
+</html>

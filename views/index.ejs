@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html data-ng-app="app">
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='stylesheets/style.css' />
+  </head>
+  <body>
+  <h1><%= title %></h1>
+  <p>Welcome to <%= title %></p>
+  <!--to view templates-->
+  <ng-view></ng-view>
+
+  <!--Libraies-->
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.25/angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.25/angular-route.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.25/angular-resource.min.js"></script>
+
+    <script type="text/ng-template" id="/books.html">
+        Изде: <input type="text" data-ng-model="search.name"/>
+    <ul>
+        <li data-ng-repeat="book in books | filter:search ">
+
+            <a  href="#/{{book._id}}">{{book.name}}</a>
+
+            <button data-ng-click="delete($index)">Очур</button>
+        </li>
+    </ul>
+        Жаны китеп кошолу
+    аты:<input type="text" data-ng-model="newBook"/>
+    автору:<input type="text" data-ng-model="newAuthor"/>
+    басмакана:<input type="text" data-ng-model="newPublisher"/>
+    жанры:<input type="text" data-ng-model="newGenre"/>
+    <button data-ng-click="save()">Кош</button>
+
+</script>
+  <script type="text/ng-template" id="/bookDetails.html">
+<li  >аты:   {{book.name}}
+<button data-ng-click="update(1)" data-ng-show="!editing[1]" >Ozgort</button>
+<input type="text" data-ng-model="name" data-ng-show="editing[1]" />
+<button data-ng-show="editing[1]" data-ng-click="save(1)">save</button>
+<button data-ng-show="editing[1]" data-ng-click="cancel(1)">cancel</button>
+</li>
+
+
+
+<li >автору:  {{book.author}}
+    <button data-ng-click="update(2)" data-ng-show="!editing[2]" >Ozgort</button>
+    <input type="text" data-ng-model="author" data-ng-show="editing[2]" />
+    <button data-ng-show="editing[2]" data-ng-click="save(2)">save</button>
+    <button data-ng-show="editing[2]" data-ng-click="cancel(2)">cancel</button></li>
+
+
+<li>жанры:  {{book.genre}}
+
+    <button data-ng-click="update(3)" data-ng-show="!editing[3]" >Ozgort</button>
+    <input type="text" data-ng-model="genre" data-ng-show="editing[3]" />
+    <button data-ng-show="editing[3]" data-ng-click="save(3)">save</button>
+    <button data-ng-show="editing[3]" data-ng-click="cancel(3)">cancel</button></li>
+
+<li>басмаканасы:  {{book.publisher}}
+
+    <button data-ng-click="update(4)" data-ng-show="!editing[4]" >Ozgort</button>
+    <input type="text" data-ng-model="publisher" data-ng-show="editing[4]" />
+    <button data-ng-show="editing[4]" data-ng-click="save(4)">save</button>
+    <button data-ng-show="editing[4]" data-ng-click="cancel(4)">cancel</button></li>
+
+<a href="/">Cancel</a>
+      <button data-ng-click="delete()">Очур</button>
+</script>
+
+    <script>
+        angular.module('app',['ngRoute','ngResource'])
+                .factory('Books', ['$resource', function ($resource) {
+                    return $resource('/books/:id',null,{
+                        'update':{method:'PUT'}
+                    });
+                }
+
+                ])
+                .controller('BookCtrl',['$scope','Books', function ($scope, Books) {
+                    $scope.editing=[];
+
+                    $scope.books = Books.query();
+                    $scope.save = function () {
+                        if(!$scope.newBook || $scope.newBook.length<1) return;
+                        var book = new Books({name:$scope.newBook,author:$scope.newAuthor,genre:$scope.newGenre,publisher:$scope.newPublisher });
+                        book.$save(function () {
+                            $scope.books.push(book);
+                            $scope.newBook = '';
+                            $scope.newAuthor = '';
+                            $scope.newPublisher = '';
+                            $scope.newGenre = '';
+                        });
+
+                    }
+                    $scope.delete = function(index){
+                        var book = $scope.books[index];
+                        Books.remove({id:book._id}, function () {
+                            $scope.books.splice(index,1);
+                        });
+                    }
+
+
+
+
+
+                }])
+                .controller('BooksDetail', ['$scope','$routeParams','Books','$location', function ($scope,$routeParams,Books,$location) {
+                   $scope.editing = [];
+                    $scope.book =Books.get({id:$routeParams.id});
+
+                    $scope.update = function (index) {
+                            $scope.editing[index]=true;
+
+                    };
+                    $scope.save = function (index) {
+
+
+                        switch (index){
+                            case 1:
+                                Books.update({id:$routeParams.id},{name:$scope.name}, function () {
+                                    $scope.book.name = $scope.name;
+
+                                });
+                                break;
+                            case 2:
+                                Books.update({id:$routeParams.id},{author:$scope.author}, function () {
+                                    $scope.book.author = $scope.author;
+
+                                });
+                                break;
+                            case 3:
+                                Books.update({id:$routeParams.id},{genre:$scope.genre}, function () {
+                                    $scope.book.genre = $scope.genre;
+
+                                });
+                                break;
+                            case 4:
+                                Books.update({id:$routeParams.id},{publisher:$scope.publisher}, function () {
+                                    $scope.book.publisher = $scope.publisher;
+
+                                });
+                                break;
+                        }
+
+                        $scope.editing[index]=false;
+
+                    };
+                    $scope.cancel= function (index) {
+
+                        switch (index){
+                            case 1:
+                               $scope.name='';
+                                break;
+                            case 2:
+                                $scope.author='';
+                                break;
+                            case 3:
+                                $scope.genre='';
+                                break;
+                            case 4:
+                                $scope.publisher='';
+                                break;
+                        }
+                        $scope.editing[index]=false;
+
+
+
+                    }
+                    $scope.delete = function () {
+                        Books.remove({id:$routeParams.id}, function () {
+                            $location.url('/');
+                        })
+                    }
+
+                }])
+                .config(['$routeProvider', function ($routeProvider) {
+                    $routeProvider
+                            .when('/',{
+                                templateUrl:'/books.html',
+                                controller:'BookCtrl'
+                    })
+
+                            .when('/:id',{
+                                templateUrl:'/bookDetails.html',
+                                controller:'BooksDetail'
+                            })
+                }]);
+    </script>
+  </body>
+</html>
